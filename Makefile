@@ -8,7 +8,7 @@ build: ## Build debian image (default)
 	@docker-compose build
 
 alpine: ## Build alpine minimal image
-	@docker-compose -f alpine.docker-compose.yml build
+	@docker-compose -f alpine/docker-compose.yml build
 
 trivy: ## Docker image vulnerability scan
 	@docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/aquasecurity/trivy:0.16.0 $2
