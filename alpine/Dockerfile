@@ -9,22 +9,18 @@ RUN apk --upgrade add --no-cache \
 
 # raspberrypi-dev \ libgpiod
 RUN ARCH=$(uname -m); \
-    if [ "$ARCH" == "armv7l" || "aarch64" ]; \
-    then apk --upgrade add --virtual .rpidev-deps \
+    if [[ "$ARCH" == "armv7l" || "aarch64" ]]; \
+    then apk --upgrade add \
     raspberrypi-dev \
-    libgpiod-dev \
+    libgpiod-dev; \
     else continue; \
     fi
 
 WORKDIR /tmp
-RUN git clone --depth=1 https://github.com/pikvm/ustreamer && cd ustreamer \
+RUN git clone --depth=1 https://github.com/pikvm/ustreamer && cd ustreamer; \
     ARCH=$(uname -m); \
-    if [ "$ARCH" == "armv7l" || "aarch64" ]; \
-    then \
-    WITH_PTHREAD_NP=0 \
-    WITH_OMX=1 \
-    WITH_GPIO=1 \
-    make; \
+    if [[ "$ARCH" == "armv7l" || "aarch64" ]]; \
+    then WITH_PTHREAD_NP=0 WITH_OMX=1 WITH_GPIO=1 make; \
     else WITH_PTHREAD_NP=0 make; \
     fi
 
@@ -37,14 +33,15 @@ RUN apk --update add --no-cache \
     libbsd
 
 RUN ARCH=$(uname -m); \
-    if [ "$ARCH" == "armv7l" || "aarch64" ]; \
-    then apk --upgrade add --virtual .rpi-deps \
+    if [[ "$ARCH" == "armv7l" || "aarch64" ]]; \
+    then apk --upgrade add \
     raspberrypi \
-    libgpiod \
+    libgpiod; \
     else continue; \
     fi
 
 FROM scratch as release
+ENV LD_LIBRARY_PATH=/opt/vc/lib
 COPY --from=pre-release / /
 COPY --from=base-build /tmp/ustreamer/ustreamer /usr/bin/ustreamer
 ENTRYPOINT ["/sbin/tini", "--"]
