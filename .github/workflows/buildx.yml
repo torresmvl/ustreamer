@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - 'v*'
+
+jobs:
+  debian:
+    name: Debian build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Docker meta
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v2
+        with:
+          images: |
+            reg.growlab.digital/ustreamer
+            ghcr.io/torresmvl/ustreamer
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+          flavor: |
+            latest=auto
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to reg.growlab.digital
+        uses: docker/login-action@v1
+        with:
+          registry: reg.growlab.digital
+          username: ${{ secrets.GROWLAB_USERNAME }}
+          password: ${{ secrets.GROWLAB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # tags: |
+          #   reg.growlab.digital/ustreamer:latest
+          #   ghcr.io/torresmvl/ustreamer:latest
+          cache-from: type=registry,ref=reg.growlab.digital/ustreamer:latest
+          cache-to: type=inline
+  alpine:
+    name: Alpine build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Docker meta
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v2
+        with:
+          images: |
+            reg.growlab.digital/ustreamer
+            ghcr.io/torresmvl/ustreamer
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+          flavor: |
+            latest=auto
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to reg.growlab.digital
+        uses: docker/login-action@v1
+        with:
+          registry: reg.growlab.digital
+          username: ${{ secrets.GROWLAB_USERNAME }}
+          password: ${{ secrets.GROWLAB_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: alpine.Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}-alpine
+          labels: ${{ steps.meta.outputs.labels }}-alpine
+          # tags: |
+          #   reg.growlab.digital/ustreamer:alpine
+          #   ghcr.io/torresmvl/ustreamer:alpine
+          cache-from: type=registry,ref=reg.growlab.digital/ustreamer:alpine
+          cache-to: type=inline
