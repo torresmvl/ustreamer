@@ -7,7 +7,7 @@ RUN apk --upgrade add --no-cache \
   libjpeg-turbo-dev \
   libbsd-dev
 
-RUN ARCH=$(uname -m); \
+RUN ARCH=$(apk --print-arch); \
   case "$ARCH" in \
   aarch64) apk add raspberrypi-dev libgpiod-dev ;; \
   armv7) apk add raspberrypi-dev libgpiod-dev ;; \
@@ -16,7 +16,7 @@ RUN ARCH=$(uname -m); \
 
 WORKDIR /tmp
 RUN git clone --depth=1 https://github.com/pikvm/ustreamer && cd ustreamer; \
-  ARCH=$(uname -m); \
+  ARCH=$(apk --print-arch); \
   case "$ARCH" in \
   x86_64) WITH_PTHREAD_NP=0 make ;; \
   *) WITH_PTHREAD_NP=0 WITH_OMX=1 WITH_GPIO=1 make ;; \
@@ -30,7 +30,7 @@ RUN apk --update add --no-cache \
   libjpeg-turbo \
   libbsd
 
-RUN ARCH=$(uname -m); \
+RUN ARCH=$(apk --print-arch); \
   case "$ARCH" in \
   aarch64) apk add raspberrypi libgpiod ;; \
   armv7) apk add raspberrypi libgpiod ;; \
